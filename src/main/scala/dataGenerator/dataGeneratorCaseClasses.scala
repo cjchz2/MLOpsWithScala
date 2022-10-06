@@ -19,6 +19,4 @@ object dataGeneratorCaseClasses {
   case class errorTermParms(mean: Int, stdDev: Int) extends dataGenerationParameters
 
   case class inputVarAndScaledInputVar(name: dataVariable, inputVar: Int, scaledInputVar: Int)
-
-  case class row(var sqft: Option[Int], var schoolRating: Option[Int], var numberOfBedRooms: Option[Int], var price: Option[Int])
 }
