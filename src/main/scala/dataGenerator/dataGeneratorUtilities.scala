@@ -3,15 +3,9 @@ package dataGenerator
 import dataGenerator.dataGeneratorCaseClasses.*
 import org.apache.commons.math3
 
+import java.io.{File, PrintWriter}
+
 object dataGeneratorUtilities extends App {
-
-//  val sqftParms = uniformDistributionVariableParameters(sqft(), 900, 9000, 10)
-//  val schoolRatingParms = uniformDistributionVariableParameters(schoolRating(), 1, 10, 10000)
-//  val numberOfBedRoomsParms = uniformDistributionVariableParameters(numberOfBedRooms(), 1, 5, 3000)
-//  val errorTermParmsVal = errorTermParms(0, 10000)
-//
-//  val distributionParmList: List[dataGenerationParameters] = List(sqftParms, schoolRatingParms, numberOfBedRoomsParms)
-
 
   def generateNormalDistInteger(mean: Int, stdDev: Int): Int =
     math3.distribution.NormalDistribution(mean, stdDev).sample.toInt
@@ -39,11 +33,28 @@ object dataGeneratorUtilities extends App {
     inputList :+ outputVal
 
   def generateManyInputRows(distributionParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms, numberOfRows: Int): List[List[Int]] =
-    val listOfInputVars: List[List[inputVarAndScaledInputVar]] = List.fill(numberOfRows)(generateRowOfInputs(distributionParmList))
+    {val listOfInputVars: List[List[inputVarAndScaledInputVar]] = List.fill(numberOfRows)(generateRowOfInputs(distributionParmList))
     val listOfOutputVars: List[Int] = listOfInputVars.map(generateOutputValue(_, generateErrorTerm(errorTermParmsVal)))
     val listOfRows: List[List[Int]] = (listOfInputVars zip listOfOutputVars).map(generateRow(_, _))
-    listOfRows
+    listOfRows}
 
-//  generateManyInputRows(distributionParmList, errorTermParmsVal, 10).foreach(println)
+  def writeRowsToCSV(listOfRows:List[List[Int]], headers:String,  fileName:String)={
+    val writer = new PrintWriter(new File(fileName))
 
+    writer.write(headers)
+    writer.write("\n")
+
+    for (list <- listOfRows) {
+      writer.write(list.mkString(","))
+      writer.write("\n")
+    }
+    writer.close}
+  def generateManyRowsAndWriteToCSV(distributionParmList: List[dataGenerationParameters],
+                                    errorTermParmsVal: errorTermParms, numberOfRows: Int,
+                                    headers:String,  fileName:String
+                                   ):Unit = {
+    val listOfRows:List[List[Int]]=  generateManyInputRows(distributionParmList, errorTermParmsVal, numberOfRows)
+    writeRowsToCSV(listOfRows, headers, fileName)
+  }
+  
 }
