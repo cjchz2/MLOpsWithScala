@@ -28,7 +28,8 @@ object main extends App{
   val headers: String = applicationConf.getString("headers")
   val numberOfRows =  applicationConf.getInt("numberOfRowsGeneratedByUser")
   val baseFileName = applicationConf.getString("baseFileName")
-  val uniqueFileName = baseFileName + System.currentTimeMillis()/1000 + ".csv"
+  val filePath = applicationConf.getString("filePath")
+  val uniqueFileName = filePath +  baseFileName + System.currentTimeMillis()/1000 + ".csv"
 
   generateManyRowsAndWriteToCSV(distributionParmList, errorTermParmsVal, numberOfRows,headers, uniqueFileName)
 }
