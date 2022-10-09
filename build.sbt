@@ -16,7 +16,3 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.3"
 )
-
-libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.10"
-libraryDependencies += "com.opencsv" % "opencsv" % "5.7.0"
-libraryDependencies += "com.nrinaudo" % "kantan.csv-generic_2.13" % "0.7.0"
