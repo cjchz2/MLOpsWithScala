@@ -9,7 +9,13 @@ import java.io.{File, PrintWriter}
 class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
                     totalNumberOfRows: Int, headers:String, filePath:String,baseFileName:String) {
 
-  val batchSize = 10000
+  private var batchSize = 10000
+
+  def setBatchSize(newBatchSize:Int): Unit =
+    if (newBatchSize > 0)
+      batchSize = newBatchSize
+    else
+      println("Batch Size must be larger than zero")
 
   def generateNormalDistInteger(mean: Int, stdDev: Int): Int =
     math3.distribution.NormalDistribution(mean, stdDev).sample.toInt
@@ -55,25 +61,24 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
     }
     writer.close
 
-
   def returnNumberOfRowsToWrite(remainingRowsToWrite:Int): Int =
       if (batchSize > remainingRowsToWrite)
         remainingRowsToWrite
       else
         batchSize
-  def generateUniqueFileName = 
-    filePath +  baseFileName + System.currentTimeMillis()/1000 + ".csv"
-  
-  def generateBatchOfRowsAndWriteToCSV(remainingRowsToWrite:Int) :Unit =
+
+  def generateUniqueFileName =
+    filePath +  baseFileName + System.nanoTime()/1000 + ".csv"
+
+  def generateBatchOfRowsAndApplyFunction(remainingRowsToWrite:Int, functionToApply: (List[List[Int]], String) => Any) :Any =
     if (remainingRowsToWrite  > 0)
       val numberOfRowsToWrite = returnNumberOfRowsToWrite(remainingRowsToWrite)
       val batchOfRows = generateBatchOfRows(numberOfRowsToWrite)
-      writeRowsToCSV(batchOfRows, generateUniqueFileName)
+      functionToApply(batchOfRows, generateUniqueFileName)
       val newRemainingRowsToWrite = remainingRowsToWrite - batchSize
-      println("Calling generateBatchRowsAndWriteToCSV AGAIN")
-      generateBatchOfRowsAndWriteToCSV(newRemainingRowsToWrite)
+      generateBatchOfRowsAndApplyFunction(newRemainingRowsToWrite, functionToApply)
 
   def generateAllRowsAndWriteToCSV: Unit =
-    generateBatchOfRowsAndWriteToCSV(totalNumberOfRows)
+    generateBatchOfRowsAndApplyFunction(totalNumberOfRows, writeRowsToCSV)
 
 }
