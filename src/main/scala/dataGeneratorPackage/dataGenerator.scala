@@ -5,9 +5,10 @@ import org.apache.commons.math3
 
 import java.io.{File, PrintWriter}
 
-
 class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
-                    totalNumberOfRows: Int, headers:String, filePath:String,baseFileName:String) {
+                    var totalNumberOfRows: Int, headers:String, filePath:String, baseFileName:String) {
+
+  require (totalNumberOfRows > 0)
 
   private var batchSize = 10000
 
@@ -16,6 +17,12 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
       batchSize = newBatchSize
     else
       println("Batch Size must be larger than zero")
+
+  def setTotalNumberOfRows(newTotalNumberOfRows:Int): Unit =
+    if (newTotalNumberOfRows > 0)
+      totalNumberOfRows = newTotalNumberOfRows
+    else
+      println("Row size must be larger than zero")
 
   def generateNormalDistInteger(mean: Int, stdDev: Int): Int =
     math3.distribution.NormalDistribution(mean, stdDev).sample.toInt
