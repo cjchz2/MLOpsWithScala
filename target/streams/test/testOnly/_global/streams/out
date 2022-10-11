@@ -1,0 +1,10 @@
+[debug] Running TaskDef(HelloFunSuite, org.scalatest.tools.Framework$$anon$1@e3929e6, false, [SuiteSelector])
+[info] HelloFunSuite:
+[info] - this does something
+[info] Run completed in 478 milliseconds.
+[info] Total number of tests run: 1
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 1, failed 0, canceled 0, ignored 0, pending 0
+[info] All tests passed.
+[debug] Passed tests:
+[debug] 	HelloFunSuite

@@ -1,0 +1,11 @@
+[debug] Acquiring lock on file C:\MLOpsFromScratch\project\target\.sbt-compilation-infos\root-compile\.sbt-idea-lock ...
+[warn] -- [E029] Pattern Match Exhaustivity Warning: C:\MLOpsFromScratch\src\main\scala\dataGenerator\dataGeneratorUtilities.scala:17:4 
+[warn] 17 |    dataGenerationValues match
+[warn]    |    ^^^^^^^^^^^^^^^^^^^^
+[warn]    |match may not be exhaustive.
+[warn]    |
+[warn]    |It would fail on pattern case: dataGeneratorCaseClasses.errorTermParms(_, _)
+[warn]    |
+[warn]    | longer explanation available when compiling with `-explain`
+[warn] one warning found
+[debug] Releasing lock on file C:\MLOpsFromScratch\project\target\.sbt-compilation-infos\root-compile\.sbt-idea-lock.

@@ -1,0 +1,49 @@
+[debug] Created transactional ClassFileManager with tempDir = C:\MLOpsFromScratch\target\scala-3.1.3\classes.bak
+[debug] About to delete class files:
+[debug] We backup class files:
+[debug] Registering generated classes:
+[debug] 	dataGeneratorCaseClasses$dataGenerationParameters.class
+[debug] 	dataGeneratorCaseClasses$price.class
+[debug] 	dataGeneratorCaseClasses$price$.class
+[debug] 	dataGeneratorCaseClasses$errorTermParms.class
+[debug] 	readConfigAndCreateUserInputCSV.class
+[debug] 	dataGeneratorCaseClasses$errorTermParms$.class
+[debug] 	dataGeneratorCaseClasses$sqft$.class
+[debug] 	dataGeneratorCaseClasses$schoolRating$.class
+[debug] 	dataGeneratorUtilities$.class
+[debug] 	dataGeneratorCaseClasses$uniformDistributionVariableParameters.class
+[debug] 	readConfigAndCreateUserInputCSV$.class
+[debug] 	dataGeneratorCaseClasses$sqft.class
+[debug] 	dataGeneratorCaseClasses$uniformDistributionVariableParameters$.class
+[debug] 	dataGeneratorCaseClasses$.class
+[debug] 	dataGeneratorCaseClasses$inputVarAndScaledInputVar$.class
+[debug] 	dataGeneratorUtilities.class
+[debug] 	dataGeneratorCaseClasses$dataVariable.class
+[debug] 	dataGeneratorCaseClasses$numberOfBedRooms$.class
+[debug] 	dataGeneratorCaseClasses$inputVarAndScaledInputVar.class
+[debug] 	dataGeneratorCaseClasses$numberOfBedRooms.class
+[debug] 	dataGeneratorCaseClasses$schoolRating.class
+[debug] 	dataGeneratorCaseClasses.class
+[debug] 	dataGeneratorCaseClasses$dataGenerationParameters.tasty
+[debug] 	dataGeneratorCaseClasses$price.tasty
+[debug] 	dataGeneratorCaseClasses$price$.tasty
+[debug] 	dataGeneratorCaseClasses$errorTermParms.tasty
+[debug] 	readConfigAndCreateUserInputCSV.tasty
+[debug] 	dataGeneratorCaseClasses$errorTermParms$.tasty
+[debug] 	dataGeneratorCaseClasses$sqft$.tasty
+[debug] 	dataGeneratorCaseClasses$schoolRating$.tasty
+[debug] 	dataGeneratorUtilities$.tasty
+[debug] 	dataGeneratorCaseClasses$uniformDistributionVariableParameters.tasty
+[debug] 	readConfigAndCreateUserInputCSV$.tasty
+[debug] 	dataGeneratorCaseClasses$sqft.tasty
+[debug] 	dataGeneratorCaseClasses$uniformDistributionVariableParameters$.tasty
+[debug] 	dataGeneratorCaseClasses$.tasty
+[debug] 	dataGeneratorCaseClasses$inputVarAndScaledInputVar$.tasty
+[debug] 	dataGeneratorUtilities.tasty
+[debug] 	dataGeneratorCaseClasses$dataVariable.tasty
+[debug] 	dataGeneratorCaseClasses$numberOfBedRooms$.tasty
+[debug] 	dataGeneratorCaseClasses$inputVarAndScaledInputVar.tasty
+[debug] 	dataGeneratorCaseClasses$numberOfBedRooms.tasty
+[debug] 	dataGeneratorCaseClasses$schoolRating.tasty
+[debug] 	dataGeneratorCaseClasses.tasty
+[debug] Removing the temporary directory used for backing up class files: C:\MLOpsFromScratch\target\scala-3.1.3\classes.bak
