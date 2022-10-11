@@ -70,7 +70,7 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
   def generateUniqueFileName =
     filePath +  baseFileName + System.nanoTime()/1000 + ".csv"
 
-  def generateBatchOfRowsAndApplyFunction(remainingRowsToWrite:Int, functionToApply: (List[List[Int]], String) => Any) :Any =
+  def generateBatchOfRowsAndApplyFunction(remainingRowsToWrite:Int, functionToApply: (List[List[Int]], String) => Any): Any =
     if (remainingRowsToWrite  > 0)
       val numberOfRowsToWrite = returnNumberOfRowsToWrite(remainingRowsToWrite)
       val batchOfRows = generateBatchOfRows(numberOfRowsToWrite)
