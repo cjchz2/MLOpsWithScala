@@ -16,7 +16,7 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
     if (newBatchSize > 0)
       batchSize = newBatchSize
     else
-      println("Batch Size must be larger than zero")
+      println("Batch size must be larger than zero")
 
   def setTotalNumberOfRows(newTotalNumberOfRows:Int): Unit =
     if (newTotalNumberOfRows > 0)
@@ -46,17 +46,17 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
   def generateOutputValue(inputVals: List[inputVarAndScaledInputVar], errorTerm: Int): Int =
     inputVals.map(_.scaledInputVar).sum + errorTerm
 
-  def generateRow(inputVals: List[inputVarAndScaledInputVar], outputVal: Int): List[Int] =
+  def generateRow(inputVals: List[inputVarAndScaledInputVar], outputVal: Int): List[Any] =
     val inputList = inputVals.map(_.inputVar)
     inputList :+ outputVal
 
-  def generateBatchOfRows(numberOfRowsToWrite: Int): List[List[Int]] =
+  def generateBatchOfRows(numberOfRowsToWrite: Int): List[List[Any]] =
     val listOfInputVars: List[List[inputVarAndScaledInputVar]] = List.fill(numberOfRowsToWrite)(generateRowOfInputs)
     val listOfOutputVars: List[Int] = listOfInputVars.map(generateOutputValue(_, generateErrorTerm))
-    val listOfRows: List[List[Int]] = (listOfInputVars zip listOfOutputVars).map(generateRow(_, _))
+    val listOfRows: List[List[Any]] = (listOfInputVars zip listOfOutputVars).map(generateRow(_, _))
     listOfRows
 
-  def writeRowsToCSV(listOfRows:List[List[Int]], fileName: String):Unit =
+  def writeRowsToCSV(listOfRows:List[List[Any]], fileName: String):Unit =
     val writer = new PrintWriter(new File(fileName))
 
     writer.write(headers)
@@ -77,7 +77,7 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
   def generateUniqueFileName =
     filePath +  baseFileName + System.nanoTime()/1000 + ".csv"
 
-  def generateBatchOfRowsAndApplyFunction(remainingRowsToWrite:Int, functionToApply: (List[List[Int]], String) => Any): Any =
+  def generateBatchOfRowsAndApplyFunction(remainingRowsToWrite:Int, functionToApply: (List[List[Any]], String) => Any): Any =
     if (remainingRowsToWrite  > 0)
       val numberOfRowsToWrite = returnNumberOfRowsToWrite(remainingRowsToWrite)
       val batchOfRows = generateBatchOfRows(numberOfRowsToWrite)
