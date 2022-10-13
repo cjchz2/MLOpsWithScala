@@ -56,7 +56,7 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
     val listOfRows: List[List[Any]] = (listOfInputVars zip listOfOutputVars).map(generateRow(_, _))
     listOfRows
 
-  def writeRowsToCSV(listOfRows:List[List[Any]], fileName: String):Unit =
+  def writeRowsToCSV(listOfRows:List[List[Any]], fileName: String): Unit =
     val writer = new PrintWriter(new File(fileName))
 
     writer.write(headers)
@@ -74,7 +74,7 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
       else
         batchSize
 
-  def generateUniqueFileName =
+  def generateUniqueFileName: String =
     filePath +  baseFileName + System.nanoTime()/1000 + ".csv"
 
   def generateBatchOfRowsAndApplyFunction(remainingRowsToWrite:Int, functionToApply: (List[List[Any]], String) => Any): Any =
