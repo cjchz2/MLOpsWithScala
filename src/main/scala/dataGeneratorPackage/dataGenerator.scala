@@ -5,9 +5,11 @@ import org.apache.commons.math3
 
 import java.io.{File, PrintWriter}
 
-class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
-                    var totalNumberOfRows: Int, headers:String, filePath:String, baseFileName:String) {
+class dataGeneratorUtilities(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
+                             var totalNumberOfRows: Int, headers:String, filePath:String, baseFileName:String) {
 
+  class invalidBatchSize(s: String) extends Exception(s) {}
+  
   require (totalNumberOfRows > 0)
 
   private var batchSize = 10000
@@ -16,7 +18,7 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
     if (newBatchSize > 0)
       batchSize = newBatchSize
     else
-      println("Batch size must be larger than zero")
+      throw new invalidBatchSize("batchSize must be strictly larger than 0")
 
   def setTotalNumberOfRows(newTotalNumberOfRows:Int): Unit =
     if (newTotalNumberOfRows > 0)
