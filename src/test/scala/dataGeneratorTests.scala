@@ -1,9 +1,9 @@
 import org.scalatest.flatspec.AnyFlatSpec
 import org.mockito.ArgumentCaptor.forClass
-import org.mockito.ArgumentCaptor
-import dataGeneratorPackage._
-import dataGeneratorPackage.dataGeneratorCaseClasses._
-import org.mockito.Mockito._
+import org.mockito.{ArgumentCaptor, InjectMocks, Mock}
+import dataGeneratorPackage.*
+import dataGeneratorPackage.dataGeneratorCaseClasses.*
+import org.mockito.Mockito.*
 
 import java.lang.IllegalArgumentException
 import org.apache.commons.math3
@@ -21,6 +21,15 @@ class tests extends AnyFlatSpec {
   val testUniformDistVarTwo = uniformDistributionVariableParameters(schoolRating(), 5, 10, 3)
   val testUniformDistVarThree = uniformDistributionVariableParameters(numberOfBedRooms(), 20, 30, 2)
   val testdataGenerationParmList = List(testUniformDistVarOne,testUniformDistVarTwo,testUniformDistVarThree)
+
+  val testInputVarOne = inputVarAndScaledInputVar(sqft(), 10000, 5)
+  val testInputVarTwo = inputVarAndScaledInputVar(schoolRating(), 20000, 3)
+  val testInputVarThree = inputVarAndScaledInputVar(numberOfBedRooms(), 30000, 2)
+  val testInputVarList = List(testInputVarOne,testInputVarTwo,testInputVarThree)
+  val testOutputVal = 250
+  val testErrorTerm = 100
+
+  val mockRandomDataGenerator = mock(classOf[randomDataGenerator])
 
   "setBatchSize" should "throw invalidBatchSize if batchSize smaller than 1" in {
     val dataGeneratorVal = dataGenerator(
@@ -148,15 +157,51 @@ class tests extends AnyFlatSpec {
       List(dataGenerationParmMock), errorTermParmMock, totalNumberOfRowsDumbVal,
       headersDumbVal, filePathDumbVal, basicFileDumbVal, mockRandomDataGenerator)
 
-    val testInputVarOne = inputVarAndScaledInputVar(sqft(), 10000, 5)
-    val testInputVarTwo = inputVarAndScaledInputVar(schoolRating(), 20000, 3)
-    val testInputVarThree = inputVarAndScaledInputVar(numberOfBedRooms(), 30000, 2)
-    val testInputVarList = List(testInputVarOne,testInputVarTwo,testInputVarThree)
-    val testErrorTerm = 100
-    
     assert(dataGeneratorTest.generateOutputValue(testInputVarList, testErrorTerm) == 5 + 3 + 2 + 100)
   }
+  "generateRow" should "Should create list of unscaled input vals and output val" in {
+    val mockRandomDataGenerator = mock(classOf[randomDataGenerator])
+    when(mockRandomDataGenerator.nextUniform(0,1)).thenReturn(10000.00)
+    when(mockRandomDataGenerator.nextUniform(5,10)).thenReturn(20000.00)
+    when(mockRandomDataGenerator.nextUniform(20,30)).thenReturn(30000.00)
+
+    val dataGeneratorTest = dataGenerator(
+      List(dataGenerationParmMock), errorTermParmMock, totalNumberOfRowsDumbVal,
+      headersDumbVal, filePathDumbVal, basicFileDumbVal, mockRandomDataGenerator)
+
+    val outputRow = dataGeneratorTest.generateRow(testInputVarList, testOutputVal)
+    assert(outputRow == List(10000,20000,30000,250))
+  }
+  "generateBatchOfRows" should "create an appropriately sized listOfRows" in {
+    val mockRandomDataGenerator = mock(classOf[randomDataGenerator])
+    when(mockRandomDataGenerator.nextUniform(0,1)).thenReturn(10000.00)
+    when(mockRandomDataGenerator.nextUniform(5,10)).thenReturn(20000.00)
+    when(mockRandomDataGenerator.nextUniform(20,30)).thenReturn(30000.00)
+    when(mockRandomDataGenerator.nextGaussian(0,1)).thenReturn(30000.00)
 
 
+    val dataGeneratorTest = dataGenerator(
+      testdataGenerationParmList, errorTermParmMock, totalNumberOfRowsDumbVal,
+      headersDumbVal, filePathDumbVal, basicFileDumbVal, mockRandomDataGenerator)
+
+    val outputRow = dataGeneratorTest.generateRow(testInputVarList, testOutputVal)
+    assert(outputRow == List(10000,20000,30000,250))
+  }
+  "writeRowsToCSV" should "do soemthing" in {
+    @Mock
+    val mockRandomDataGeneratorWriter = mock(classOf[randomDataGeneratorWriter])
+    val mockRandomDataGenerator = mock(classOf[randomDataGenerator])
+    val listOfRows = List(List(1,2,3), List(4,5,6))
+    verify(mockRandomDataGeneratorWriter, times(1)).write(headersDumbVal)
+
+    @InjectMocks
+    val dataGeneratorTest = dataGenerator(
+      testdataGenerationParmList, errorTermParmMock, totalNumberOfRowsDumbVal,
+      headersDumbVal, filePathDumbVal, basicFileDumbVal, mockRandomDataGenerator)
+
+    dataGeneratorTest.writeRowsToCSV(listOfRows, mockRandomDataGeneratorWriter)
+    println(verify(mockRandomDataGeneratorWriter, times(1)).write(headersDumbVal))
+
+  }
 }
 
