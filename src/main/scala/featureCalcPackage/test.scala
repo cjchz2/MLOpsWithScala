@@ -1,0 +1,5 @@
+package featureCalcPackage
+
+object test {
+
+}
