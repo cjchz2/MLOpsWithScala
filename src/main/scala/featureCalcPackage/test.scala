@@ -1,5 +1,0 @@
-package featureCalcPackage
-
-object test {
-
-}
