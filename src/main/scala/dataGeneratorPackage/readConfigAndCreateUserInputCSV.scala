@@ -15,6 +15,7 @@ class readConfigAndGenerateData(trainingOrPredictionData:String) {
       applicationConf.getString("predictioneDataFilePath")
     else
       "something"
+      //Want to throw below exception but not cooperating, revisit
 //    else
 //      throw dataGenerator.invalidGenerationOption("Only training or prediction are valid options")
 
