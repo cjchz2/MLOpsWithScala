@@ -1,9 +1,12 @@
 package featureCalcPackage
 
+import java.io.{File, FileWriter, PrintWriter}
 import scala.io.Source
-import dataGeneratorPackage.dataGeneratorCaseClasses._
+import com.typesafe.config.{Config, ConfigFactory}
 
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
+import dataUtilities.readingDataFromFlatFile._
 
 /*
 To do.
@@ -12,17 +15,13 @@ whole dataset.
 2. Figure out more elegant solution to schema approach?
 3. Make standardizeNumericData generic to deal with other numeric data types.
 4. How to get returnDataFromFileAsRows to append data vs prepend it?
-5. Unit test
+5. Integrate schema information into config file more elegantly?
+6. Unit test
 
 */
 
 object featureCalculations  extends App {
-
-  def splitStringRowIntoElements(listOfStringRows: List[List[String]]): List[List[String]] =
-    listOfStringRows.map(x => x.head.split(",").toList)
-
-  def returnColumnarFromRowData(listOfSeperatedStringRow: List[List[String]]): List[List[String]] =
-    listOfSeperatedStringRow.transpose
+  
 
   //How can I get this to work for any "numeric" data type. Things you can add,divide, etc.
   def standardizeNumericData(columnOfData: List[Int]): List[Any] =
@@ -46,12 +45,13 @@ object featureCalculations  extends App {
   def returnDataFromFileAsRows(fileName: String): List[List[String]] =
     var listVal = List.empty[List[String]]
     val dataFile = scala.io.Source.fromFile(fileName)
-    for (line <- dataFile.getLines){
-      listVal =  List(line) :: listVal}
+    for (line <- dataFile.getLines) {
+      listVal = List(line) :: listVal
+    }
     dataFile.close()
     listVal.reverse
 
-  def applyTransformationsToAllData(data: List[List[String]], schema: List[String]):List[List[Any]] =
+  def applyTransformationsToAllData(data: List[List[String]], schema: List[String]): List[List[Any]] =
     var transformedData = List.empty[List[Any]]
     val zippedList = data zip schema
     for (data <- zippedList) {
@@ -61,10 +61,43 @@ object featureCalculations  extends App {
     transformedData
 
 
-  def readDataCSVAndApplyFeatureCalculations(fileName:String,csvSchema:List[String]) =
+  def readDataCSVAndApplyFeatureCalculations(fileName: String, configFileName: String) =
+
+    val applicationConf: Config = ConfigFactory.load(configFileName)
+
+    val csvSchema = applicationConf.getStringList("csvSchema").asScala.toList
     val csvList = returnDataFromFileAsRows(fileName)
     val splitCSVList = splitStringRowIntoElements(csvList)
     val columnarList = returnColumnarFromRowData(splitCSVList)
 
-    applyTransformationsToAllData(columnarList,csvSchema)
+    applyTransformationsToAllData(columnarList, csvSchema)
+
+
+  def writeFeatureCalculationsToCSV(inputFileName:String, configFileName:String) =
+    val outputFileName = createFeatureCalculationFileName(inputFileName, configFileName)
+    val transformedData = readDataCSVAndApplyFeatureCalculations(inputFileName,configFileName)
+    val transformedRowData = transformedData.transpose
+    val writer = PrintWriter(outputFileName)
+    for (list <- transformedRowData) {
+      writer.write(list.mkString(","))
+      writer.write("\n")
+    }
+    writer.close
+
+  def createFeatureCalculationFileName(inputFileWithPath: String, configFileName: String) = {
+    val applicationConf: Config = ConfigFactory.load(configFileName)
+    val outputPath = applicationConf.getString("outputFilePath")
+    val baseFileName = inputFileWithPath.split("\\\\").last
+    val inputFileSeperatedFromExtension = baseFileName.split("\\.")
+    val outputFileName: String = inputFileSeperatedFromExtension.head + "featureCalculation." + inputFileSeperatedFromExtension(1)
+    outputPath + outputFileName
+  }
+  writeFeatureCalculationsToCSV(raw"C:\MLOpsFromScratch\data\generatedInputData\houseDataInput7671329763.csv",
+  "application.conf")
+
+  val data = returnDataFromFileAsRows(raw"C:\MLOpsFromScratch\data\generatedInputData\houseDataInput7671329763.csv")
+//  data(1).foreach(println)
+
+  val testFileName = raw"C:\MLOpsFromScratch\data\generatedInputData\houseDataInput7671329763.csv"
+
 }
