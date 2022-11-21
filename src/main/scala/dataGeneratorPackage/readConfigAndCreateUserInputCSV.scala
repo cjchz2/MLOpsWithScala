@@ -4,9 +4,22 @@ import java.io.{File, FileWriter}
 import dataGeneratorPackage.dataGenerator
 import dataGeneratorPackage.dataGeneratorCaseClasses.*
 
+class readConfigAndGenerateData(trainingOrPredictionData:String) {
 
-object readConfigAndCreateUserInputCSV extends App{
   val applicationConf: Config = ConfigFactory.load("application.conf")
+
+  def specifyProperFilePath:String =
+    if (trainingOrPredictionData == "training")
+      applicationConf.getString("trainingDataFilePath")
+    else if (trainingOrPredictionData == "prediction")
+      applicationConf.getString("predictioneDataFilePath")
+    else
+      "something"
+//    else
+//      throw dataGenerator.invalidGenerationOption("Only training or prediction are valid options")
+
+
+
 
   val sqftParms = uniformDistributionVariableParameters(
     sqft(), applicationConf.getInt("sqft.lowerBound"),
@@ -28,9 +41,13 @@ object readConfigAndCreateUserInputCSV extends App{
   val headers: String = applicationConf.getString("headers")
   val numberOfRows =  applicationConf.getInt("numberOfRowsGeneratedByUser")
   val baseFileName = applicationConf.getString("baseFileName")
-  val filePath = applicationConf.getString("filePath")
-  
-  val dataGeneratorVal = new dataGenerator(distributionParmList, errorTermParmsVal, numberOfRows, headers, filePath,baseFileName)
 
-  dataGeneratorVal.generateAllRowsAndWriteToCSV
+  
+  val dataGeneratorVal = new dataGenerator(distributionParmList, errorTermParmsVal, numberOfRows, headers, specifyProperFilePath, baseFileName)
+
+  dataGeneratorVal.generateAllRowsAndWriteToCSV(trainingOrPredictionData)
+}
+
+object main extends App {
+  readConfigAndGenerateData("prediction")
 }

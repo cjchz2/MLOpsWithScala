@@ -1,17 +1,17 @@
 package dataGeneratorPackage
+
 import dataGeneratorPackage.dataGeneratorCaseClasses.*
 import org.apache.commons.math3
-
 import java.io.{File, PrintWriter}
 import org.apache.commons.math3.distribution.{AbstractRealDistribution, NormalDistribution}
 import org.apache.commons.math3.random.RandomDataGenerator
 
+
 class invalidBatchSize(s: String) extends Exception(s)
 class invalidRowSize(s: String) extends Exception(s)
-
+class invalidGenerationOption(s: String) extends Exception(s)
 class randomDataGenerator extends RandomDataGenerator
 class randomDataGeneratorWriter(fileName:File) extends PrintWriter(fileName:File)
-//class randomDataGeneratorNIOFile extends Files
 
 class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
                     var totalNumberOfRows: Int, headers:String, filePath:String, baseFileName:String,
@@ -22,8 +22,12 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
 
   private var batchSize = 10000
 
-  def generateUniqueFileName: String =
-    filePath +  baseFileName + System.nanoTime()/1000 + ".csv"
+  def generateTargetAndFeatureFileName =
+    filePath +  baseFileName + "TargetAndFeature" + System.nanoTime()/1000 + ".csv"
+
+  def generateSeperateTargetandFeatureFileName =
+    val timestamp = System.nanoTime()/1000
+    (filePath +  baseFileName + "Features" + timestamp + ".csv", filePath +  baseFileName + "Target" + timestamp + ".csv")
   
   def setBatchSize(newBatchSize:Int): Unit =
     if (newBatchSize > 0)
@@ -68,14 +72,22 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
     val listOfRows: List[List[Any]] = (listOfInputVars zip listOfOutputVars).map(generateRow(_, _))
     listOfRows
 
-  def writeRowsToCSV(listOfRows:List[List[Any]], writer: randomDataGeneratorWriter): Unit =
-    writer.write(headers)
-    writer.write("\n")
+  def returnValidHeaders(trainingFeatureOrTarget:String):String = 
+    if (trainingFeatureOrTarget == "feature")
+      headers.split(",").init.mkString(",")
+    else if (trainingFeatureOrTarget == "target")
+      headers.split(",").last.trim
+    else
+      headers
 
-    for (list <- listOfRows) {
+  def writeRowsToCSV(listOfRows:List[List[Any]], writer: randomDataGeneratorWriter, trainingFeatureOrTarget:String): Unit =
+    val newHeaders = returnValidHeaders(trainingFeatureOrTarget)
+    
+    writer.write(newHeaders)
+    writer.write("\n")
+    for (list <- listOfRows) 
       writer.write(list.mkString(","))
       writer.write("\n")
-    }
     writer.close
 
   def returnNumberOfRowsToWrite(remainingRowsToWrite:Int): Int =
@@ -84,18 +96,28 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
       else
         batchSize
 
-
-  def generateBatchOfRowsAndWriteToCSV(remainingRowsToWrite:Int): Any =
+  def generateBatchOfRowsWriteToCSV(remainingRowsToWrite:Int, trainingOrPredictionData: String): Any =
     if (remainingRowsToWrite  > 0)
       val numberOfRowsToWrite = returnNumberOfRowsToWrite(remainingRowsToWrite)
       val batchOfRows = generateBatchOfRows(numberOfRowsToWrite)
-      val fileName = generateUniqueFileName
-      val writer = new randomDataGeneratorWriter(new File(fileName))
-      writeRowsToCSV(batchOfRows, writer)
+      if (trainingOrPredictionData == "training")
+        val fileName = generateTargetAndFeatureFileName
+        lazy val writer = new randomDataGeneratorWriter(new File(fileName))
+        writeRowsToCSV(batchOfRows, writer, "training")
+      else if (trainingOrPredictionData == "prediction")
+        val fileNames = generateSeperateTargetandFeatureFileName
+        lazy val featureWriter = new randomDataGeneratorWriter(new File(fileNames(0)))
+        val featureData = batchOfRows.map(_.init)
+        writeRowsToCSV(featureData, featureWriter, "feature")
+        lazy val targetWriter = new randomDataGeneratorWriter(new File(fileNames(1)))
+        val targetData = batchOfRows.map(_.last).map(List(_))
+        writeRowsToCSV(targetData, targetWriter, "target")
+      else
+        throw invalidGenerationOption("Must either provide 'training' or 'prediction'")
       val newRemainingRowsToWrite = remainingRowsToWrite - batchSize
-      generateBatchOfRowsAndWriteToCSV(newRemainingRowsToWrite)
+      generateBatchOfRowsWriteToCSV(newRemainingRowsToWrite,trainingOrPredictionData)
 
-  def generateAllRowsAndWriteToCSV: Unit =
-    generateBatchOfRowsAndWriteToCSV(totalNumberOfRows)
+  def generateAllRowsAndWriteToCSV(trainingOrPredictionData: String): Unit =
+    generateBatchOfRowsWriteToCSV(totalNumberOfRows, trainingOrPredictionData)
 
 }
