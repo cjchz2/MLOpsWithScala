@@ -1,4 +1,4 @@
-package featureCalcPackage
+package transformData
 
 import java.io.{File, FileWriter, PrintWriter}
 import scala.io.Source
@@ -20,7 +20,7 @@ whole dataset.
 
 */
 
-object featureCalculations  extends App {
+object transformData  extends App {
   
 
   //How can I get this to work for any "numeric" data type. Things you can add,divide, etc.
