@@ -22,9 +22,6 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
 
   private var batchSize = 10000
 
-  def generateTargetAndFeatureFileName =
-    filePath +  baseFileName + "TargetAndFeature" + System.nanoTime()/1000 + ".csv"
-
   def generateSeperateTargetandFeatureFileName =
     val timestamp = System.nanoTime()/1000
     (filePath +  baseFileName + "Features" + timestamp + ".csv", filePath +  baseFileName + "Target" + timestamp + ".csv")
@@ -82,7 +79,6 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
 
   def writeRowsToCSV(listOfRows:List[List[Any]], writer: randomDataGeneratorWriter, trainingFeatureOrTarget:String): Unit =
     val newHeaders = returnValidHeaders(trainingFeatureOrTarget)
-    
     writer.write(newHeaders)
     writer.write("\n")
     for (list <- listOfRows) 
@@ -96,28 +92,21 @@ class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], erro
       else
         batchSize
 
-  def generateBatchOfRowsWriteToCSV(remainingRowsToWrite:Int, trainingOrPredictionData: String): Any =
+  def generateBatchOfRowsWriteToCSV(remainingRowsToWrite:Int): Any =
     if (remainingRowsToWrite  > 0)
       val numberOfRowsToWrite = returnNumberOfRowsToWrite(remainingRowsToWrite)
       val batchOfRows = generateBatchOfRows(numberOfRowsToWrite)
-      if (trainingOrPredictionData == "training")
-        val fileName = generateTargetAndFeatureFileName
-        lazy val writer = new randomDataGeneratorWriter(new File(fileName))
-        writeRowsToCSV(batchOfRows, writer, "training")
-      else if (trainingOrPredictionData == "prediction")
-        val fileNames = generateSeperateTargetandFeatureFileName
-        lazy val featureWriter = new randomDataGeneratorWriter(new File(fileNames(0)))
-        val featureData = batchOfRows.map(_.init)
-        writeRowsToCSV(featureData, featureWriter, "feature")
-        lazy val targetWriter = new randomDataGeneratorWriter(new File(fileNames(1)))
-        val targetData = batchOfRows.map(_.last).map(List(_))
-        writeRowsToCSV(targetData, targetWriter, "target")
-      else
-        throw invalidGenerationOption("Must either provide 'training' or 'prediction'")
+      val fileNames = generateSeperateTargetandFeatureFileName
+      lazy val featureWriter = new randomDataGeneratorWriter(new File(fileNames(0)))
+      val featureData = batchOfRows.map(_.init)
+      writeRowsToCSV(featureData, featureWriter, "feature") 
+      lazy val targetWriter = new randomDataGeneratorWriter(new File(fileNames(1)))
+      val targetData = batchOfRows.map(_.last).map(List(_))
+      writeRowsToCSV(targetData, targetWriter, "target")
       val newRemainingRowsToWrite = remainingRowsToWrite - batchSize
-      generateBatchOfRowsWriteToCSV(newRemainingRowsToWrite,trainingOrPredictionData)
+      generateBatchOfRowsWriteToCSV(newRemainingRowsToWrite)
 
-  def generateAllRowsAndWriteToCSV(trainingOrPredictionData: String): Unit =
-    generateBatchOfRowsWriteToCSV(totalNumberOfRows, trainingOrPredictionData)
+  def generateAllRowsAndWriteToCSV: Unit =
+    generateBatchOfRowsWriteToCSV(totalNumberOfRows)
 
 }

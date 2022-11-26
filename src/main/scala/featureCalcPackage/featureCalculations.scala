@@ -55,49 +55,58 @@ object featureCalculations  extends App {
     var transformedData = List.empty[List[Any]]
     val zippedList = data zip schema
     for (data <- zippedList) {
-      val thing = applyDataProcessingOnColumn(data)
-      transformedData = thing :: transformedData
+      val column = applyDataProcessingOnColumn(data)
+      transformedData = column :: transformedData
     }
-    transformedData
+    transformedData.reverse
 
-
-  def readDataCSVAndApplyFeatureCalculations(fileName: String, configFileName: String) =
-
+  def returnSchema(featureOrTarget:String, configFileName:String) =
     val applicationConf: Config = ConfigFactory.load(configFileName)
+    if (featureOrTarget == "feature")
+      applicationConf.getStringList("featureSchema").asScala.toList
+    else
+      applicationConf.getStringList("targetSchema").asScala.toList
 
-    val csvSchema = applicationConf.getStringList("csvSchema").asScala.toList
+
+  def readDataCSVAndApplyCalculations(fileName: String,featureOrTarget:String, configFileName: String) =
+    val csvSchema =  returnSchema(featureOrTarget, configFileName)
     val csvList = returnDataFromFileAsRows(fileName)
     val splitCSVList = splitStringRowIntoElements(csvList)
     val columnarList = returnColumnarFromRowData(splitCSVList)
-
     applyTransformationsToAllData(columnarList, csvSchema)
 
+  def createFeatureCalculationFileName(inputFileWithPath: String, configFileName: String) = {
+    val applicationConf: Config = ConfigFactory.load(configFileName)
+    val outputPath = applicationConf.getString("transformedDataFilePath")
+    val transformedFileName = inputFileWithPath.split("\\\\").last.replace("raw", "transformed")
+    outputPath + transformedFileName
+  }
+
+  def determineFeatureOrTarget(fileName:String) =
+    if (fileName contains "Features")
+      "feature"
+    else
+      "target"
 
   def writeFeatureCalculationsToCSV(inputFileName:String, configFileName:String) =
     val outputFileName = createFeatureCalculationFileName(inputFileName, configFileName)
-    val transformedData = readDataCSVAndApplyFeatureCalculations(inputFileName,configFileName)
+    val transformedData = readDataCSVAndApplyCalculations(inputFileName, determineFeatureOrTarget(inputFileName), configFileName)
     val transformedRowData = transformedData.transpose
+    val headers = transformedRowData(0).map(_.toString).map(_.trim)
     val writer = PrintWriter(outputFileName)
-    for (list <- transformedRowData) {
+    writer.write(headers.mkString(","))
+    writer.write("\n")
+    for (list <- transformedRowData.tail) {
       writer.write(list.mkString(","))
       writer.write("\n")
     }
     writer.close
 
-  def createFeatureCalculationFileName(inputFileWithPath: String, configFileName: String) = {
-    val applicationConf: Config = ConfigFactory.load(configFileName)
-    val outputPath = applicationConf.getString("outputFilePath")
-    val baseFileName = inputFileWithPath.split("\\\\").last
-    val inputFileSeperatedFromExtension = baseFileName.split("\\.")
-    val outputFileName: String = inputFileSeperatedFromExtension.head + "featureCalculation." + inputFileSeperatedFromExtension(1)
-    outputPath + outputFileName
-  }
-  writeFeatureCalculationsToCSV(raw"C:\MLOpsFromScratch\data\generatedInputData\houseDataInput7671329763.csv",
-  "application.conf")
+  val fileName = raw"C:\MLOpsFromScratch\data\input\rawTarget165188679125.csv"
+  val configFile = raw"application.conf"
 
-  val data = returnDataFromFileAsRows(raw"C:\MLOpsFromScratch\data\generatedInputData\houseDataInput7671329763.csv")
-//  data(1).foreach(println)
+  writeFeatureCalculationsToCSV(fileName, configFile)
 
-  val testFileName = raw"C:\MLOpsFromScratch\data\generatedInputData\houseDataInput7671329763.csv"
+
 
 }

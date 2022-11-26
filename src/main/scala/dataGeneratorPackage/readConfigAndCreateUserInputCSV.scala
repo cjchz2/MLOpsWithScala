@@ -1,26 +1,12 @@
 package dataGeneratorPackage
 import com.typesafe.config.{Config, ConfigFactory}
-import java.io.{File, FileWriter}
 import dataGeneratorPackage.dataGenerator
 import dataGeneratorPackage.dataGeneratorCaseClasses.*
 
-class readConfigAndGenerateData(trainingOrPredictionData:String) {
+object readConfigAndGenerateData extends App {
 
   val applicationConf: Config = ConfigFactory.load("application.conf")
-
-  def specifyProperFilePath:String =
-    if (trainingOrPredictionData == "training")
-      applicationConf.getString("trainingDataFilePath")
-    else if (trainingOrPredictionData == "prediction")
-      applicationConf.getString("predictioneDataFilePath")
-    else
-      "something"
-      //Want to throw below exception but not cooperating, revisit
-//    else
-//      throw dataGenerator.invalidGenerationOption("Only training or prediction are valid options")
-
-
-
+  val dataFilePath = applicationConf.getString("inputDataFilePath")
 
   val sqftParms = uniformDistributionVariableParameters(
     sqft(), applicationConf.getInt("sqft.lowerBound"),
@@ -44,11 +30,10 @@ class readConfigAndGenerateData(trainingOrPredictionData:String) {
   val baseFileName = applicationConf.getString("baseFileName")
 
   
-  val dataGeneratorVal = new dataGenerator(distributionParmList, errorTermParmsVal, numberOfRows, headers, specifyProperFilePath, baseFileName)
+  val dataGeneratorVal = new dataGenerator(
+    distributionParmList, errorTermParmsVal, numberOfRows,
+    headers, dataFilePath, baseFileName)
 
-  dataGeneratorVal.generateAllRowsAndWriteToCSV(trainingOrPredictionData)
+  dataGeneratorVal.generateAllRowsAndWriteToCSV
 }
 
-object main extends App {
-  readConfigAndGenerateData("prediction")
-}
