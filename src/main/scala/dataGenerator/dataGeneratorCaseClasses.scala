@@ -1,4 +1,4 @@
-package dataGeneratorPackage 
+package dataGeneratorPackage
 
 object dataGeneratorCaseClasses {
   sealed trait dataVariable

@@ -1,6 +1,6 @@
-package dataGeneratorPackage
+package dataGenerator
 
-import dataGeneratorPackage.dataGeneratorCaseClasses.*
+import dataGeneratorCaseClasses.{dataGenerationParameters, errorTermParms, uniformDistributionVariableParameters, inputVarAndScaledInputVar}
 import org.apache.commons.math3
 import java.io.{File, PrintWriter}
 import org.apache.commons.math3.distribution.{AbstractRealDistribution, NormalDistribution}
