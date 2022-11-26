@@ -39,18 +39,6 @@ object transformData  extends App {
     else
       columnAndSchema(0)
 
-  //How can I append as opposed to prepending? The "::" operator is not allowing these to be swapped even though both are lists.
-  //Getting the following error when swapped Required List[List[String]], required List[Object] (for listVal).
-  //But I am specifying listVal as an empty List[String]!
-  def returnDataFromFileAsRows(fileName: String): List[List[String]] =
-    var listVal = List.empty[List[String]]
-    val dataFile = scala.io.Source.fromFile(fileName)
-    for (line <- dataFile.getLines) {
-      listVal = List(line) :: listVal
-    }
-    dataFile.close()
-    listVal.reverse
-
   def applyTransformationsToAllData(data: List[List[String]], schema: List[String]): List[List[Any]] =
     var transformedData = List.empty[List[Any]]
     val zippedList = data zip schema
