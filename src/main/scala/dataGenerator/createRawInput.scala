@@ -13,7 +13,7 @@ class invalidGenerationOption(s: String) extends Exception(s)
 class randomDataGenerator extends RandomDataGenerator
 class randomDataGeneratorWriter(fileName:File) extends PrintWriter(fileName:File)
 
-class dataGenerator(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
+class createRawInput(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
                     var totalNumberOfRows: Int, headers:String, filePath:String, baseFileName:String,
                     val randomDataGeneratorVal: RandomDataGenerator = new randomDataGenerator
                    ) {

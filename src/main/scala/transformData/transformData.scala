@@ -5,8 +5,8 @@ import scala.io.Source
 import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
-
-import dataUtilities.readingDataFromFlatFile._
+import dataUtilities.readingDataFromFlatFile.*
+import dataProfiler.readDataProfile
 
 /*
 To do.
@@ -20,81 +20,60 @@ whole dataset.
 
 */
 
-object transformData  extends App {
-  
+class transformData(dataFileName: String, dataProfileFileName:String) extends App {
+  def returnDataProfileAgg(dataFileName: String, dataProfileFileName: String, aggType: String): List[Double] =
+    val headers: List[String] = returnHeadersAsListFromFile(dataFileName)
+    val readDataProfileInstance = new readDataProfile
+    val dataProfile = readDataProfileInstance.readDataProfile(dataProfileFileName)
+    headers
+      .map((strVal:String) => readDataProfileInstance.returnAppropriateAggregation(dataProfile, strVal, aggType))
 
-  //How can I get this to work for any "numeric" data type. Things you can add,divide, etc.
-  def standardizeNumericData(columnOfData: List[Int]): List[Any] =
-    val meanOfData = columnOfData.sum / columnOfData.length // V SIZE?
-    val deviationFromMean = columnOfData.map(_ - meanOfData)
-    val sumOfSquaredDeviations = deviationFromMean.map(scala.math.pow(_, 2)).sum
-    val variance = sumOfSquaredDeviations / (columnOfData.length - 1)
-    val standardDeviation = scala.math.sqrt(variance)
-    val standardizedList = deviationFromMean.map(_ / standardDeviation)
-    standardizedList
+  def standardizeColumn(columnOfData: List[Double], mean: Double, stdDev: Double): List[Double] =
+      val deviationFromMean = columnOfData.map(_ - mean)
+      deviationFromMean.map(_ / stdDev)
 
-  def applyDataProcessingOnColumn(columnAndSchema: Tuple2[List[String], String]): List[Any] =
-    if (columnAndSchema(1) == "Int")
-      columnAndSchema(0).head :: standardizeNumericData(columnAndSchema(0).tail.map(_.toInt))
-    else
-      columnAndSchema(0)
-
-  def applyTransformationsToAllData(data: List[List[String]], schema: List[String]): List[List[Any]] =
-    var transformedData = List.empty[List[Any]]
-    val zippedList = data zip schema
-    for (data <- zippedList) {
-      val column = applyDataProcessingOnColumn(data)
-      transformedData = column :: transformedData
+  def standardizeAllColumns(data:List[List[Double]], zippedMeanAndStdDev: List[(Double, Double)]): List[List[Double]] =
+    val dataZipAgg = data zip zippedMeanAndStdDev
+    dataZipAgg.map {
+      case (x: List[Double], (y: Double, z: Double)) => standardizeColumn(x,y,z)
     }
-    transformedData.reverse
 
-  def returnSchema(featureOrTarget:String, configFileName:String) =
-    val applicationConf: Config = ConfigFactory.load(configFileName)
-    if (featureOrTarget == "feature")
-      applicationConf.getStringList("featureSchema").asScala.toList
-    else
-      applicationConf.getStringList("targetSchema").asScala.toList
-
-
-  def readDataCSVAndApplyCalculations(fileName: String,featureOrTarget:String, configFileName: String) =
-    val csvSchema =  returnSchema(featureOrTarget, configFileName)
-    val csvList = returnDataFromFileAsRows(fileName)
-    val splitCSVList = splitStringRowIntoElements(csvList)
-    val columnarList = returnColumnarFromRowData(splitCSVList)
-    applyTransformationsToAllData(columnarList, csvSchema)
-
-  def createFeatureCalculationFileName(inputFileWithPath: String, configFileName: String) = {
-    val applicationConf: Config = ConfigFactory.load(configFileName)
+  def createTransformedFileName(inputFileName: String) =
+    val applicationConf: Config = ConfigFactory.load("application.conf")
     val outputPath = applicationConf.getString("transformedDataFilePath")
-    val transformedFileName = inputFileWithPath.split("\\\\").last.replace("raw", "transformed")
+    val transformedFileName = inputFileName.split("\\\\").last.replace("raw", "transformed")
     outputPath + transformedFileName
-  }
 
-  def determineFeatureOrTarget(fileName:String) =
-    if (fileName contains "Features")
-      "feature"
-    else
-      "target"
+  def readDataCSVAndStandardize =
+    val data = returnDataFromFileAsRows(dataFileName)
+    val splitData = splitStringRowIntoElements(data)
+    val splitDataNoHeaders = splitData.tail
+    val columnarData = returnColumnarFromRowData(splitDataNoHeaders)
+    val stdDev: List[Double] = returnDataProfileAgg(dataFileName, dataProfileFileName, "stdDev")
+    val mean: List[Double] = returnDataProfileAgg(dataFileName, dataProfileFileName, "mean")
+    val zippedMeanAndStdDev= stdDev zip mean
+    val standardizedColumns = standardizeAllColumns(
+      columnarData.map((column:List[String]) => column.map((value:String) => value.toDouble)),
+      zippedMeanAndStdDev)
+    splitData.head :: standardizedColumns.transpose
 
-  def writeFeatureCalculationsToCSV(inputFileName:String, configFileName:String) =
-    val outputFileName = createFeatureCalculationFileName(inputFileName, configFileName)
-    val transformedData = readDataCSVAndApplyCalculations(inputFileName, determineFeatureOrTarget(inputFileName), configFileName)
-    val transformedRowData = transformedData.transpose
-    val headers = transformedRowData(0).map(_.toString).map(_.trim)
-    val writer = PrintWriter(outputFileName)
-    writer.write(headers.mkString(","))
-    writer.write("\n")
-    for (list <- transformedRowData.tail) {
+  def writeTransformedDataToCSV =
+    val transformedRowData = readDataCSVAndStandardize
+    val transformFileName = createTransformedFileName(dataFileName)
+    val writer = PrintWriter(transformFileName)
+    for (list <- transformedRowData) {
       writer.write(list.mkString(","))
       writer.write("\n")
     }
     writer.close
 
-  val fileName = raw"C:\MLOpsFromScratch\data\input\rawTarget165188679125.csv"
-  val configFile = raw"application.conf"
+}
+object runTransform extends App {
 
-  writeFeatureCalculationsToCSV(fileName, configFile)
-
+  val dataFileName = raw"C:\MLOpsFromScratch\data\input\rawFeatures203004313136.csv"
+  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileFeatures2403249156.csv"
+  val transformer = new transformData(dataFileName: String, dataProfileFileName:String)
+  transformer.writeTransformedDataToCSV
 
 
 }

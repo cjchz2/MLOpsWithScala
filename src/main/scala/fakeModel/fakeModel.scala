@@ -47,14 +47,8 @@ object fakeModel extends App {
 
   def createEstimatesAndWriteToCSV(fileName:String, parameters: List[Double], configFileName: String): Unit =
     val estimates = readFeaturesFromFileAndReturnEstimate(fileName, parameters)
-    println(estimates)
     val estimatesFileName = createEstimatesCalculationFileName(fileName: String, configFileName: String)
     writeEstimatesToCSV(estimates, estimatesFileName)
-
-
-  val fileName = raw"C:\MLOpsFromScratch\data\transformed\transformedFeatures165188679125.csv"
-  readFeaturesFromFileAndReturnEstimate(fileName, List(1, 10, 20)).foreach(println)
-  createEstimatesAndWriteToCSV(fileName, List(1,2,3), "application.conf")
 }
 
 
