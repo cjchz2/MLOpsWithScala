@@ -75,7 +75,7 @@ class readDataProfile {
 
 object dataProfileTest extends App{
   val dataProfilerInstance = new dataProfiler
-  dataProfilerInstance.writeDataProfile(raw"C:\MLOpsFromScratch\data\input\rawFeatures2403249156.csv")
+//  dataProfilerInstance.writeDataProfile(raw"C:\MLOpsFromScratch\data\input\rawFeatures2403249156.csv")
   val readDataProfileInstance = new readDataProfile
   val dp = readDataProfileInstance.readDataProfile(raw"C:\\MLOpsFromScratch\\data\\dataProfile\\dataProfileFeatures2403249156.csv")
   println(readDataProfileInstance.returnAppropriateAggregation(dp, "sqft", "stdDev"))
