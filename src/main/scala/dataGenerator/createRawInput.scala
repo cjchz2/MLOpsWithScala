@@ -1,10 +1,16 @@
 package dataGenerator
 
-import dataGeneratorCaseClasses.{dataGenerationParameters, errorTermParms, uniformDistributionVariableParameters, inputVarAndScaledInputVar}
+import dataGeneratorCaseClasses.{dataGenerationParameters, errorTermParms, inputVarAndScaledInputVar, uniformDistributionVariableParameters}
 import org.apache.commons.math3
+
 import java.io.{File, PrintWriter}
 import org.apache.commons.math3.distribution.{AbstractRealDistribution, NormalDistribution}
 import org.apache.commons.math3.random.RandomDataGenerator
+
+import java.time.temporal.ChronoUnit
+import java.time.temporal.ChronoUnit.{DAYS, MINUTES}
+import java.time.{Duration, LocalDate, LocalDateTime}
+import scala.util.Random
 
 
 class invalidBatchSize(s: String) extends Exception(s)
@@ -14,8 +20,8 @@ class randomDataGenerator extends RandomDataGenerator
 class randomDataGeneratorWriter(fileName:File) extends PrintWriter(fileName:File)
 
 class createRawInput(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
-                    var totalNumberOfRows: Int, headers:String, filePath:String, baseFileName:String,
-                    val randomDataGeneratorVal: RandomDataGenerator = new randomDataGenerator
+                    var totalNumberOfRows: Int, featureHeaders:String, targetHeaders:String, filePath:String, baseFileName:String,
+                     trainingOrPrediction: String, val randomDataGeneratorVal: RandomDataGenerator = new randomDataGenerator 
                    ) {
 
   require (totalNumberOfRows > 0)
@@ -25,7 +31,23 @@ class createRawInput(dataGenerationParmList: List[dataGenerationParameters], err
   def generateSeperateTargetandFeatureFileName =
     val timestamp = System.nanoTime()/1000
     (filePath +  baseFileName + "Features" + timestamp + ".csv", filePath +  baseFileName + "Target" + timestamp + ".csv")
-  
+
+  def randomDateRange(from: LocalDateTime, to: LocalDateTime): LocalDateTime =
+    val dayDiff = DAYS.between(from, to)
+    val minuteDiff = MINUTES.between(LocalDateTime.now(), LocalDateTime.now().minusMinutes(30))
+    val random = new Random(System.nanoTime)
+    from.plusDays(random.nextInt(dayDiff.toInt)).plus(random.nextInt(minuteDiff.toInt.abs),MINUTES)
+
+
+  def generateRandomDateTimeInLast30Days: LocalDateTime =
+    randomDateRange(LocalDateTime.now().minusDays(30), LocalDateTime.now())
+
+  def generateDateOfLabel =
+    if (trainingOrPrediction == "training")
+      generateRandomDateTimeInLast30Days
+    else
+      LocalDate.now()
+
   def setBatchSize(newBatchSize:Int): Unit =
     if (newBatchSize > 0)
       batchSize = newBatchSize
@@ -71,11 +93,9 @@ class createRawInput(dataGenerationParmList: List[dataGenerationParameters], err
 
   def returnValidHeaders(trainingFeatureOrTarget:String):String = 
     if (trainingFeatureOrTarget == "feature")
-      headers.split(",").init.mkString(",")
-    else if (trainingFeatureOrTarget == "target")
-      headers.split(",").last.trim
+      featureHeaders.split(",").mkString(",")
     else
-      headers
+      targetHeaders.split(",").mkString(",")
 
   def writeRowsToCSV(listOfRows:List[List[Any]], writer: randomDataGeneratorWriter, trainingFeatureOrTarget:String): Unit =
     val newHeaders = returnValidHeaders(trainingFeatureOrTarget)
@@ -83,6 +103,10 @@ class createRawInput(dataGenerationParmList: List[dataGenerationParameters], err
     writer.write("\n")
     for (list <- listOfRows) 
       writer.write(list.mkString(","))
+      if (trainingFeatureOrTarget == "target") {
+        writer.write(",")
+        writer.write(generateDateOfLabel.toString)
+  }
       writer.write("\n")
     writer.close
 

@@ -17,12 +17,21 @@ whole dataset.
 4. How to get returnDataFromFileAsRows to append data vs prepend it?
 5. Integrate schema information into config file more elegantly?
 6. Unit test
+7. How to deal with dates of target labels???
 
 */
 
 class transformData(dataFileName: String, dataProfileFileName:String) extends App {
+  val applicationConf: Config = ConfigFactory.load("application.conf")
+
+
   def returnDataProfileAgg(aggType: String): List[Double] =
-    val headers: List[String] = returnHeadersAsListFromFile(dataFileName)
+    val headers = if (dataFileName contains "Target") {
+     applicationConf.getString("targetHeadersForTransformation").split(",").toList
+    }
+    else {
+      applicationConf.getString("featureHeaders").split(",").toList
+    }
     val readDataProfileInstance = new readDataProfile
     val dataProfile = readDataProfileInstance.readDataProfile(dataProfileFileName)
     headers
@@ -43,19 +52,31 @@ class transformData(dataFileName: String, dataProfileFileName:String) extends Ap
     val outputPath = applicationConf.getString("transformedDataFilePath")
     val transformedFileName = inputFileName.split("\\\\").last.replace("raw", "transformed")
     outputPath + transformedFileName
-
+  // break up this crappy function
   def readDataCSVAndStandardize =
     val data = returnDataFromFileAsRows(dataFileName)
     val splitData = splitStringRowIntoElements(data)
     val splitDataNoHeaders = splitData.tail
-    val columnarData = returnColumnarFromRowData(splitDataNoHeaders)
+    val columnarData: List[List[String]] = if (dataFileName contains "Target")
+      List(returnColumnarFromRowData(splitDataNoHeaders).head)
+    else
+      returnColumnarFromRowData(splitDataNoHeaders)
     val stdDev: List[Double] = returnDataProfileAgg("stdDev")
     val mean: List[Double] = returnDataProfileAgg("mean")
     val zippedMeanAndStdDev= stdDev zip mean
     val standardizedColumns = standardizeAllColumns(
       columnarData.map((column:List[String]) => column.map((value:String) => value.toDouble)),
       zippedMeanAndStdDev)
-    splitData.head :: standardizedColumns.transpose
+    val finalColumns = if (dataFileName contains "Target")
+      val dates = returnColumnarFromRowData(splitDataNoHeaders).tail.head
+      val zippedDatesAndLabels = standardizedColumns.head zip dates
+      zippedDatesAndLabels.map{
+        case  (data,date) => List(data,date)
+        }
+        else
+          standardizedColumns.transpose
+
+    splitData.head :: finalColumns
 
   def writeTransformedDataToCSV =
     val transformedRowData = readDataCSVAndStandardize
@@ -70,12 +91,25 @@ class transformData(dataFileName: String, dataProfileFileName:String) extends Ap
 }
 object runTransform extends App {
 
-//  val dataFileName = raw"C:\MLOpsFromScratch\data\input\rawFeatures203004313136.csv"
-//  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileFeatures2403249156.csv"
+  val dataFileName = raw"C:\MLOpsFromScratch\data\input\rawFeatures579052687363.csv"
+  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileFeatures2403249156.csv"
 //  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileTarget2403249156.csv"
-//  val dataFileName = raw"C:\MLOpsFromScratch\data\input\rawTarget203004274309.csv"
-//  val transformer = new transformData(dataFileName, dataProfileFileName)
-//  transformer.writeTransformedDataToCSV
-
+//  val dataFileName = raw"C:\MLOpsFromScratch\data\input\rawTarget725898811707.csv"
+  val transformer = new transformData(dataFileName, dataProfileFileName)
+  transformer.writeTransformedDataToCSV
+//  val test  = List(List(1,2,3), List('a', 'b', 'c'))
+//
+//  val numbers = test.head
+//  val letters = test.tail.head
+//  println(numbers)
+//  println(letters)
+//  val zippie = numbers zip letters
+//
+//  println(zippie)
+//  val zipList = zippie.map{
+//    case  (a,b) => List(a,b)
+//  }
+//  println(zipList)
+//  println(zipList.map((f: List[String]) => f.mkString))
 
 }

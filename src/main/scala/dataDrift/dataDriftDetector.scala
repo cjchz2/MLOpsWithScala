@@ -1,6 +1,4 @@
 package dataDrift
-import integration.createInputTransformAndEstimateData.{rawDataDir, targetDataProfileFileName}
-
 import scala.math
 import org.apache.commons.math3.stat.inference
 import transformData.transformData
@@ -21,11 +19,6 @@ class dataDriftDetector {
 //  }
   val trainingData = trainingFilesNamesAsString.map((file:String) => readingDataFromFlatFile.returnDataFromFileAsRows(file))
   val trainingDataNoHeaders = trainingData.map((dataSet: List[List[String]]) => dataSet.tail)
-  trainingDataNoHeaders.foreach(println)
-  trainingDataNoHeaders.map(_.reduce(_ ++ _).foreach(println))
-//  traininfiles.foreach(println)
-//  val dumbArray = Array(1,2,3)
-//  dumbArray.toList
   val ksTest = inference.KolmogorovSmirnovTest()
   val ksValue = ksTest.kolmogorovSmirnovTest(listOne, listTwo, false)
 }
@@ -33,5 +26,5 @@ class dataDriftDetector {
 object dataDriftDetector extends App {
   val dataDriftDetectorInstance = new dataDriftDetector
 
-//  println(dataDriftDetectorInstance.ksValue)
+  println(dataDriftDetectorInstance.ksValue)
 }

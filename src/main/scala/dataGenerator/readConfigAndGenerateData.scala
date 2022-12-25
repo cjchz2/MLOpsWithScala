@@ -26,14 +26,15 @@ object readConfigAndGenerateData extends App {
   val distributionParmList: List[dataGeneratorCaseClasses.dataGenerationParameters] = List(sqftParms, schoolRatingParms, numberOfBedRoomsParms)
 
 
-  val headers: String = applicationConf.getString("headers")
+  val featureHeaders: String = applicationConf.getString("featureHeaders")
+  val targetHeaders: String = applicationConf.getString("targetHeaders")
   val numberOfRows =  applicationConf.getInt("numberOfRowsGeneratedByUser")
   val baseFileName = applicationConf.getString("baseFileName")
 
   
   val dataGeneratorVal = new createRawInput(
     distributionParmList, errorTermParmsVal, numberOfRows,
-    headers, dataFilePath, baseFileName)
+    featureHeaders, targetHeaders, dataFilePath, baseFileName, "training")
 
   dataGeneratorVal.generateAllRowsAndWriteToCSV
 }

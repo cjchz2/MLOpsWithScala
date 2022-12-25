@@ -29,7 +29,7 @@ object createInputTransformAndEstimateData extends App {
   val transformedFilesNamesAsString = transformedDataDir.listFiles.map(_.toString).filter(_ contains "Features")
 //  //Write estimates to estimates folder.
   transformedFilesNamesAsString.foreach(createEstimatesAndWriteToCSV(_, parameterEstimates, "application.conf"))
-  //Compare the
+  //Move
 
 
 }
