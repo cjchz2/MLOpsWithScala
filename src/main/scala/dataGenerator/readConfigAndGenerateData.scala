@@ -7,8 +7,8 @@ import dataGenerator.dataGeneratorCaseClasses._
 object readConfigAndGenerateData extends App {
 
   val applicationConf: Config = ConfigFactory.load("application.conf")
-  val dataFilePath = applicationConf.getString("inputDataFilePath")
-
+  val rawTargetFilePath = applicationConf.getString("rawTargetDataFilePath")
+  val rawFeatureFilePath = applicationConf.getString("rawFeatureDataFilePath")
   val sqftParms = dataGeneratorCaseClasses.uniformDistributionVariableParameters(
     dataGeneratorCaseClasses.sqft(), applicationConf.getInt("sqft.lowerBound"),
     applicationConf.getInt("sqft.upperBound"), applicationConf.getInt("sqft.coefficient"))
@@ -34,7 +34,7 @@ object readConfigAndGenerateData extends App {
   
   val dataGeneratorVal = new createRawInput(
     distributionParmList, errorTermParmsVal, numberOfRows,
-    featureHeaders, targetHeaders, dataFilePath, baseFileName, "training")
+    featureHeaders, targetHeaders, rawFeatureFilePath, rawTargetFilePath, baseFileName, "training")
 
   dataGeneratorVal.generateAllRowsAndWriteToCSV
 }

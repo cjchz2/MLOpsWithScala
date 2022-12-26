@@ -21,7 +21,7 @@ whole dataset.
 
 */
 
-class transformData(dataFileName: String, dataProfileFileName:String) extends App {
+class transformData(dataFileName: String, dataProfileFileName:String, featureOrTarget: String) extends App {
   val applicationConf: Config = ConfigFactory.load("application.conf")
 
 
@@ -49,7 +49,12 @@ class transformData(dataFileName: String, dataProfileFileName:String) extends Ap
 
   def createTransformedFileName(inputFileName: String) =
     val applicationConf: Config = ConfigFactory.load("application.conf")
-    val outputPath = applicationConf.getString("transformedDataFilePath")
+    val outputPath = if (featureOrTarget == "feature") {
+      applicationConf.getString("transformedFeaturesDataFilePath")
+    }
+    else {
+        applicationConf.getString("transformedTargetsDataFilePath")
+      }
     val transformedFileName = inputFileName.split("\\\\").last.replace("raw", "transformed")
     outputPath + transformedFileName
   // break up this crappy function
@@ -65,8 +70,7 @@ class transformData(dataFileName: String, dataProfileFileName:String) extends Ap
     val mean: List[Double] = returnDataProfileAgg("mean")
     val zippedMeanAndStdDev= stdDev zip mean
     val standardizedColumns = standardizeAllColumns(
-      columnarData.map((column:List[String]) => column.map((value:String) => value.toDouble)),
-      zippedMeanAndStdDev)
+      columnarData.map((column:List[String]) => column.map((value:String) => value.toDouble)), zippedMeanAndStdDev)
     val finalColumns = if (dataFileName contains "Target")
       val dates = returnColumnarFromRowData(splitDataNoHeaders).tail.head
       val zippedDatesAndLabels = standardizedColumns.head zip dates
@@ -91,11 +95,11 @@ class transformData(dataFileName: String, dataProfileFileName:String) extends Ap
 }
 object runTransform extends App {
 
-  val dataFileName = raw"C:\MLOpsFromScratch\data\input\rawFeatures579052687363.csv"
-  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileFeatures2403249156.csv"
-//  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileTarget2403249156.csv"
-//  val dataFileName = raw"C:\MLOpsFromScratch\data\input\rawTarget725898811707.csv"
-  val transformer = new transformData(dataFileName, dataProfileFileName)
+//  val dataFileName = raw"C:\MLOpsFromScratch\data\rawFeaturesStaging\rawFeatures888313249076.csv"
+//  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileFeatures2403249156.csv"
+  val dataProfileFileName = raw"C:\MLOpsFromScratch\data\dataProfile\dataProfileTarget2403249156.csv"
+  val dataFileName = raw"C:\MLOpsFromScratch\data\rawTargetsStaging\rawTarget888313249076.csv"
+  val transformer = new transformData(dataFileName, dataProfileFileName, "target")
   transformer.writeTransformedDataToCSV
 //  val test  = List(List(1,2,3), List('a', 'b', 'c'))
 //

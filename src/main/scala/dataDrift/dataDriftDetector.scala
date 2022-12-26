@@ -35,7 +35,7 @@ class dataDriftDetector {
   val zipped = combineTrainingAndInputArray
   println(determineRetraining(performKSTestOnAllColumns(zipped)))
 
-
+}
 
 object dataDriftDetector extends App {
   val dataDriftDetectorInstance = new dataDriftDetector

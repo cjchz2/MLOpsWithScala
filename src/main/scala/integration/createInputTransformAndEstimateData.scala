@@ -16,33 +16,47 @@ object createInputTransformAndEstimateData extends App {
   val featureDataProfileFileName = "C:\\MLOpsFromScratch\\data\\dataProfile\\dataProfileFeatures2403249156.csv"
   val targetDataProfileFileName = "C:\\MLOpsFromScratch\\data\\dataProfile\\dataProfileTarget2403249156.csv"
   readConfigAndGenerateData
-  val rawDataDir = new File("data/input/")
-  val rawFilesNamesAsString = rawDataDir.listFiles.map(_.toString)
+  val rawTargetsStagingDir = new File("data/rawTargetsStaging/")
+  val rawFeaturesStagingDir = new File("data/rawFeaturesStaging/")
+  val rawTargetFileNamesAsString = rawTargetsStagingDir.listFiles.map(_.toString)
+  val rawFeatureFileNamesAsString = rawFeaturesStagingDir.listFiles.map(_.toString)
   // Transform targets and features.
-  for (file <- rawFilesNamesAsString; if file contains "Target") {
-    val transformer = new transformData(file, targetDataProfileFileName)
+  for (file <- rawTargetFileNamesAsString) {
+    val transformer = new transformData(file, targetDataProfileFileName, "target")
     transformer.writeTransformedDataToCSV
   }
-  for (file <- rawFilesNamesAsString; if file contains "Features") {
-    val transformer = new transformData(file, featureDataProfileFileName)
+  for (file <- rawFeatureFileNamesAsString) {
+    val transformer = new transformData(file, featureDataProfileFileName, "feature")
     transformer.writeTransformedDataToCSV
   }
   // Estimate data points
-  val transformedDataDir = new File("data/transformed")
-  val transformedFilesNamesAsString = transformedDataDir.listFiles.map(_.toString).filter(_ contains "Features")
+  val transformedFeatureDir = new File("data/transformedFeatures")
+  val transformedTargetDir = new File("data/transformedTargets")
+  val transformedFeatureFilesNamesAsString = transformedFeatureDir.listFiles.map(_.toString)
+  val transformedTargetFilesNamesAsString = transformedTargetDir.listFiles.map(_.toString)
 //  //Write estimates to estimates folder.
-  transformedFilesNamesAsString.foreach(createEstimatesAndWriteToCSV(_, parameterEstimates, "application.conf"))
-  //Move input in data to archiveData
-  val rawArchiveDataDir = new File("archiveData/input/")
+  transformedFeatureFilesNamesAsString.foreach(createEstimatesAndWriteToCSV(_, parameterEstimates, "application.conf"))
+  //Move rawTargets in data to archiveData
+  val archivedTransformedDataFilePath = new File("archiveData/rawTargets/")
   //move data from data/input to archiveData input
   import org.apache.commons.io.FileUtils
-    for (file <- rawDataDir.listFiles()) {
-      FileUtils.moveFileToDirectory(file, new File(rawArchiveDataDir.toString.replace("data", "archiveData")), false )
+    for (file <- rawTargetsStagingDir.listFiles()) {
+      FileUtils.moveFileToDirectory(file, new File(archivedTransformedDataFilePath.toString.replace("data", "archiveData")), false )
     }
-  //move data from data/transformed to archiveData/featureStore
+  //Move rawFeatures in data to archiveData
+  val archivedRawFeaturesDataFilePath = new File("archiveData/rawFeatures/")
+  for (file <- rawFeaturesStagingDir.listFiles()) {
+    FileUtils.moveFileToDirectory(file, new File(archivedRawFeaturesDataFilePath.toString.replace("data", "archiveData")), false )
+  }
+  //move transformed features from data/transformedFeatures to archiveData/featureStore
+
   val featureStoreDataDir = new File("archiveData/featureStore/")
-  for (file <- transformedDataDir.listFiles()) {
+  for (file <- transformedFeatureDir.listFiles()) {
     FileUtils.moveFileToDirectory(file, new File(featureStoreDataDir.toString.replace("transformed", "featureStore")), false )
   }
+//  val targetStoreDataDir = new File("archiveData/transformedTargets/")
+//  for (file <- transformedTargetDir.listFiles()) {
+//    FileUtils.moveFileToDirectory(file, new File("archiveData/transformedTargets/", false ))
+//  }
 
 }

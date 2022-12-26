@@ -20,7 +20,8 @@ class randomDataGenerator extends RandomDataGenerator
 class randomDataGeneratorWriter(fileName:File) extends PrintWriter(fileName:File)
 
 class createRawInput(dataGenerationParmList: List[dataGenerationParameters], errorTermParmsVal: errorTermParms,
-                    var totalNumberOfRows: Int, featureHeaders:String, targetHeaders:String, filePath:String, baseFileName:String,
+                    var totalNumberOfRows: Int, featureHeaders:String, targetHeaders:String, featureFilePath:String,
+                     targetFilePath:String, baseFileName:String,
                      trainingOrPrediction: String, val randomDataGeneratorVal: RandomDataGenerator = new randomDataGenerator 
                    ) {
 
@@ -30,7 +31,7 @@ class createRawInput(dataGenerationParmList: List[dataGenerationParameters], err
 
   def generateSeperateTargetandFeatureFileName =
     val timestamp = System.nanoTime()/1000
-    (filePath +  baseFileName + "Features" + timestamp + ".csv", filePath +  baseFileName + "Target" + timestamp + ".csv")
+    (featureFilePath +  baseFileName + "Features" + timestamp + ".csv", targetFilePath +  baseFileName + "Target" + timestamp + ".csv")
 
   def randomDateRange(from: LocalDateTime, to: LocalDateTime): LocalDateTime =
     val dayDiff = DAYS.between(from, to)
